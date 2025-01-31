@@ -55,7 +55,7 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         if ($panel->getId() === 'support') {
-            return in_array($this->permission, PermissionsEnum::accessPanelSupport());
+            return in_array($this->permission, PermissionsEnum::accessPanelSupport()) && $this->is_active;
         }
 
         return true;
