@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->boolean('is_active')->default(true);
+            $table->boolean('is_tournament')->default(true);
             $table->timestamps();
         });
     }

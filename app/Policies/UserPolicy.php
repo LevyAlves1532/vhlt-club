@@ -18,6 +18,11 @@ class UserPolicy
         $this->user = Auth::user();
     }
 
+    public function viewAny()
+    {
+        return $this->user->permission !== PermissionsEnum::COMMUNITY_MANAGER;
+    }
+
     public function delete()
     {
         return $this->user->permission === PermissionsEnum::SUPER_ADMIN;
