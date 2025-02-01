@@ -108,7 +108,28 @@ class TournamentResource extends Resource
                     ->label('Privado:')
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('community_id')
+                    ->label('Comunidade:')
+                    ->options(Community::where('is_tournament', true)->pluck('name', 'id')),
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Status:')
+                    ->options(TournamentStatusEnum::labels()),
+                Tables\Filters\SelectFilter::make('is_private')
+                    ->label('Condição:')
+                    ->options([
+                        'private' => 'Mostrar somente os Privados',
+                        'public' => 'Mostrar somente os Públicos',
+                    ])
+                    ->query(function (Builder $query, $state) {
+                        switch ($state['value']) {
+                            case 'private':
+                                return $query->where('is_private', true);
+                            case 'public':
+                                return $query->where('is_private', false);
+                            default:
+                                return $query;
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
