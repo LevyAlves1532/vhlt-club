@@ -54,6 +54,9 @@ class CommunityResource extends Resource
                 Forms\Components\Toggle::make('is_active')
                     ->label('Ativo')
                     ->default(true),
+                Forms\Components\Toggle::make('is_tournament')
+                    ->label('Tôrneios')
+                    ->default(true),
             ]);
     }
 
@@ -70,6 +73,8 @@ class CommunityResource extends Resource
                     ->searchable(),
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Ativo:'),
+                Tables\Columns\ToggleColumn::make('is_tournament')
+                    ->label('Tôrneios:'),
             ])
             ->filters([
                 //
