@@ -94,6 +94,7 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('permission')
+                    ->label('Tipo de Usuário:')
                     ->options(PermissionsEnum::labels()),
                 Tables\Filters\SelectFilter::make('is_active')
                     ->label('Condição:')
