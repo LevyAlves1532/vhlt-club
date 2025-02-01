@@ -92,7 +92,8 @@ class UserResource extends Resource
                     ->disabled(fn ($record) => $record->permission === PermissionsEnum::SUPER_ADMIN),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('permission')
+                    ->options(PermissionsEnum::labels())
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
