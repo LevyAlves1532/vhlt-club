@@ -74,6 +74,11 @@ class TournamentResource extends Resource
                             ->columnSpan(2)
                             ->minLength(32)
                             ->required(),
+                        Forms\Components\Select::make('status')
+                            ->label('Status')
+                            ->columnSpan(2)
+                            ->options(TournamentStatusEnum::labels())
+                            ->visibleOn('edit'),
                         Forms\Components\Toggle::make('is_private')
                             ->label('Privado'),
                     ]),
@@ -92,6 +97,8 @@ class TournamentResource extends Resource
                     ->label('Título:')
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('community.name')
+                    ->label('Comunidade:'),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status:')
                     ->badge()

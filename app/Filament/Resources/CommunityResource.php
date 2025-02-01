@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CommunityResource\Pages;
 use App\Filament\Resources\CommunityResource\RelationManagers;
+use App\Filament\Resources\CommunityResource\RelationManagers\TournamentsRelationManager;
 use App\Models\Community;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -32,31 +33,35 @@ class CommunityResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\SpatieMediaLibraryFileUpload::make('communityAvatar')
-                    ->collection('communityAvatars')
-                    ->label('Imagem:')
-                    ->columnSpan(2)
-                    ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png'])
-                    ->required(),
-                Forms\Components\TextInput::make('name')
-                    ->label('Nome:')
-                    ->placeholder('Nome da comunidade...')
-                    ->minLength(3)
-                    ->maxLength(100)
-                    ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $state, Set $set) => $set('slug', Str::slug($state)))
-                    ->required(),
-                Forms\Components\TextInput::make('slug')
-                    ->label('Slug:')
-                    ->placeholder('Slug da comunidade...')
-                    ->unique('communities', 'slug', fn ($record) => isset($record) ? $record : null)
-                    ->disabled(),
-                Forms\Components\Toggle::make('is_active')
-                    ->label('Ativo')
-                    ->default(true),
-                Forms\Components\Toggle::make('is_tournament')
-                    ->label('Tôrneios')
-                    ->default(true),
+                Forms\Components\Section::make('Comunidade')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\SpatieMediaLibraryFileUpload::make('communityAvatar')
+                            ->collection('communityAvatars')
+                            ->label('Imagem:')
+                            ->columnSpan(2)
+                            ->acceptedFileTypes(['image/jpeg', 'image/jpg', 'image/png'])
+                            ->required(),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nome:')
+                            ->placeholder('Nome da comunidade...')
+                            ->minLength(3)
+                            ->maxLength(100)
+                            ->live(onBlur: true)
+                            ->afterStateUpdated(fn (string $state, Set $set) => $set('slug', Str::slug($state)))
+                            ->required(),
+                        Forms\Components\TextInput::make('slug')
+                            ->label('Slug:')
+                            ->placeholder('Slug da comunidade...')
+                            ->unique('communities', 'slug', fn ($record) => isset($record) ? $record : null)
+                            ->disabled(),
+                        Forms\Components\Toggle::make('is_active')
+                            ->label('Ativo')
+                            ->default(true),
+                        Forms\Components\Toggle::make('is_tournament')
+                            ->label('Tôrneios')
+                            ->default(true),
+                    ]),
             ]);
     }
 
@@ -99,7 +104,7 @@ class CommunityResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TournamentsRelationManager::class
         ];
     }
 

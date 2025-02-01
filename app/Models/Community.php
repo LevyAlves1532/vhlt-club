@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -29,5 +30,10 @@ class Community extends Model implements HasMedia
 
         $this->addMediaConversion('big')
             ->fit(Fit::Contain, 1200, 1200);
+    }
+
+    public function tournaments(): HasMany
+    {
+        return $this->hasMany(Tournament::class);
     }
 }

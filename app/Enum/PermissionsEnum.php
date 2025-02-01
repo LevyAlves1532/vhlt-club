@@ -6,6 +6,7 @@ enum PermissionsEnum: string
 {
     case SUPER_ADMIN = 'super_admin';
     case ADMIN = 'admin';
+    case COMMUNITY_MANAGER = 'community_manager';
     case CLIENT = 'client';
 
     public static function labels()
@@ -13,6 +14,7 @@ enum PermissionsEnum: string
         return [
             self::SUPER_ADMIN->value => 'Super Admin',
             self::ADMIN->value => 'Admin',
+            self::COMMUNITY_MANAGER->value => 'Gerenciador da Comunidade',
             self::CLIENT->value => 'Cliente',
         ];
     }
@@ -21,6 +23,7 @@ enum PermissionsEnum: string
     {
         return [
             self::SUPER_ADMIN,
+            self::COMMUNITY_MANAGER,
             self::ADMIN,
         ];
     }

@@ -27,5 +27,12 @@ class UserSeeder extends Seeder
             'password' => 'admin123',
             'permission' => PermissionsEnum::ADMIN,
         ]);
+
+        User::create([
+            'name' => 'Josue',
+            'email' => 'josue@gmail.com',
+            'password' => 'admin123',
+            'permission' => PermissionsEnum::COMMUNITY_MANAGER,
+        ]);
     }
 }
