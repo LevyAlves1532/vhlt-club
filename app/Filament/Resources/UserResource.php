@@ -12,6 +12,7 @@ use Filament\Support\Colors\Color;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -93,7 +94,23 @@ class UserResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('permission')
-                    ->options(PermissionsEnum::labels())
+                    ->options(PermissionsEnum::labels()),
+                Tables\Filters\SelectFilter::make('is_active')
+                    ->label('Condição:')
+                    ->options([
+                        'active' => 'Mostrar somente os ativos',
+                        'inactive' => 'Mostrar somente os desativos',
+                    ])
+                    ->query(function (Builder $query, $state) {
+                        switch ($state['value']) {
+                            case 'active':
+                                return $query->where('is_active', true);
+                            case 'inactive':
+                                return $query->where('is_active', false);
+                            default:
+                                return $query;
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
