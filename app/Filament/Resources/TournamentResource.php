@@ -47,6 +47,11 @@ class TournamentResource extends Resource
                             ->label('Comunidade:')
                             ->options(Community::where('is_tournament', true)->pluck('name', 'id'))
                             ->required(),
+                        Forms\Components\TextInput::make('number_players_team')
+                            ->label('Jogadores por time:')
+                            ->placeholder('Quantidade de jogadores por time...')
+                            ->integer()
+                            ->required(),
                         Forms\Components\TextInput::make('title')
                             ->label('Título:')
                             ->placeholder('Título do torneio...')
@@ -59,7 +64,6 @@ class TournamentResource extends Resource
                             ->label('Slug:')
                             ->placeholder('Slug do torneio...')
                             ->unique('tournaments', 'slug', fn ($record) => isset($record) ? $record : null)
-                            ->columnSpan(2)
                             ->disabled(),
                         Forms\Components\Textarea::make('short_description')
                             ->label('Pequena Descrição:')

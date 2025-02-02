@@ -48,13 +48,19 @@ class TournamentsRelationManager extends RelationManager
                     ->minLength(3)
                     ->maxLength(255)
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (string $state, Set $set) => $set('slug', Str::slug($state)))
+                    ->afterStateUpdated(fn ($state, Set $set) => $set('slug', Str::slug($state)))
                     ->required(),
                 Forms\Components\TextInput::make('slug')
                     ->label('Slug:')
                     ->placeholder('Slug do torneio...')
                     ->unique('tournaments', 'slug', fn ($record) => isset($record) ? $record : null)
                     ->disabled(),
+                Forms\Components\TextInput::make('number_players_team')
+                    ->label('Jogadores por time:')
+                    ->placeholder('Quantidade de jogadores por time...')
+                    ->integer()
+                    ->columnSpan(2)
+                    ->required(),
                 Forms\Components\Textarea::make('short_description')
                     ->label('Pequena Descrição:')
                     ->placeholder('Pequena descrição para o torneio...')    
@@ -103,12 +109,22 @@ class TournamentsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->mutateFormDataUsing(function ($data) {
+                        $data['slug'] = Str::slug($data['title']);
+                
+                        return $data;
+                    }),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->iconButton()
-                    ->color('info'),
+                    ->color('info')
+                    ->mutateFormDataUsing(function ($data) {
+                        $data['slug'] = Str::slug($data['title']);
+                
+                        return $data;
+                    }),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
