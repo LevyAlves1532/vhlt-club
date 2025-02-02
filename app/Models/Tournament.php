@@ -21,6 +21,7 @@ class Tournament extends Model implements HasMedia
         'short_description',
         'description',
         'status',
+        'number_players_team',
         'is_private',
     ];
 

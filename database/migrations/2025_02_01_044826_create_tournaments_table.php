@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('short_description');
             $table->text('description');
             $table->string('status')->default(TournamentStatusEnum::OUTLINE);
+            $table->integer('number_players_team');
             $table->boolean('is_private')->default(false);
             $table->timestamps();
         });
