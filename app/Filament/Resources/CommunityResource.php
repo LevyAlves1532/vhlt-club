@@ -59,7 +59,7 @@ class CommunityResource extends Resource
                             ->label('Ativo')
                             ->default(true),
                         Forms\Components\Toggle::make('is_tournament')
-                            ->label('Tôrneios')
+                            ->label('Torneios')
                             ->default(true),
                     ]),
             ]);
@@ -79,10 +79,31 @@ class CommunityResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Ativo:'),
                 Tables\Columns\ToggleColumn::make('is_tournament')
-                    ->label('Tôrneios:'),
+                    ->label('Torneios:'),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('is_active')
+                    ->label('Condição:')
+                    ->options([
+                        'active' => 'Mostrar somente os ativos',
+                        'inactive' => 'Mostrar somente os desativos',
+                        'has_tournament' => 'Mostrar somente os que tem torneios',
+                        'has_not_tournament' => 'Mostrar somente os que não tem torneios',
+                    ])
+                    ->query(function (Builder $query, $state) {
+                        switch ($state['value']) {
+                            case 'active':
+                                return $query->where('is_active', true);
+                            case 'inactive':
+                                return $query->where('is_active', false);
+                            case 'has_tournament':
+                                return $query->where('is_tournament', true);
+                            case 'has_not_tournament':
+                                return $query->where('is_tournament', false);
+                            default:
+                                return $query;
+                        }
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
