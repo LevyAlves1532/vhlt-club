@@ -8,6 +8,7 @@ use App\Enum\PermissionsEnum;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -50,6 +51,11 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'permission' => PermissionsEnum::class,
         ];
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
     }
 
     public function canAccessPanel(Panel $panel): bool

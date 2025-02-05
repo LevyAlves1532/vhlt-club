@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enum\TournamentStatusEnum;
 use App\Filament\Resources\TeamResource\Pages;
 use App\Filament\Resources\TeamResource\RelationManagers;
+use App\Filament\Resources\TeamResource\RelationManagers\UsersRelationManager;
 use App\Models\Community;
 use App\Models\Team;
 use App\Models\Tournament;
@@ -148,7 +149,7 @@ class TeamResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            UsersRelationManager::class,
         ];
     }
 
