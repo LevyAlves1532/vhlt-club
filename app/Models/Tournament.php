@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enum\TournamentStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -39,6 +40,11 @@ class Tournament extends Model implements HasMedia
 
         $this->addMediaConversion('big')
             ->fit(Fit::Contain, 1200, 900);
+    }
+
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class);
     }
 
     public function community(): BelongsTo
