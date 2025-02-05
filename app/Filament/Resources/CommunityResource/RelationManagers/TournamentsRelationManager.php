@@ -110,21 +110,13 @@ class TournamentsRelationManager extends RelationManager
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->mutateFormDataUsing(function ($data) {
-                        $data['slug'] = Str::slug($data['title']);
-                
-                        return $data;
-                    }),
+                    ->mutateFormDataUsing(fn ($data) => $this->mutateFormData($data)),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
                     ->iconButton()
                     ->color('info')
-                    ->mutateFormDataUsing(function ($data) {
-                        $data['slug'] = Str::slug($data['title']);
-                
-                        return $data;
-                    }),
+                    ->mutateFormDataUsing(fn ($data) => $this->mutateFormData($data)),
                 Tables\Actions\DeleteAction::make()
                     ->iconButton(),
             ])
@@ -133,5 +125,12 @@ class TournamentsRelationManager extends RelationManager
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    private function mutateFormData($data)
+    {
+        $data['slug'] = Str::slug($data['title']);
+                
+        return $data;
     }
 }
