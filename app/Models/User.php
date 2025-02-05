@@ -55,7 +55,8 @@ class User extends Authenticatable implements FilamentUser
 
     public function teams(): BelongsToMany
     {
-        return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id');
+        return $this->belongsToMany(Team::class, 'team_user', 'user_id', 'team_id')
+            ->withPivot('id', 'is_allowed', 'is_accepted', 'is_leader', 'is_active');
     }
 
     public function canAccessPanel(Panel $panel): bool

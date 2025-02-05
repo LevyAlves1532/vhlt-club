@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Filament\Resources\TeamResource\RelationManagers;
+namespace App\Filament\Resources\UserResource\RelationManagers;
 
 use App\Models\Team;
-use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -13,32 +12,25 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class UsersRelationManager extends RelationManager
+class TeamsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'users';
+    protected static string $relationship = 'teams';
 
-    protected static ?string $title = 'Membros';
+    protected static ?string $title = 'Times';
 
-    protected static ?string $modelLabel = 'membro';
+    protected static ?string $modelLabel = 'time';
     
-    protected static ?string $pluralModelLabel = 'membros';
+    protected static ?string $pluralModelLabel = 'times';
 
     public function form(Form $form): Form
     {
-        $users = User::where('is_active', true)
-            ->whereDoesntHave('teams', function ($query) {
-                $query->where('teams.id', $this->ownerRecord->id);
-            })
-            ->pluck('name', 'id');
-
         return $form
             ->schema([
-                Forms\Components\Hidden::make('team_id')
+                Forms\Components\Hidden::make('user_id')
                     ->default($this->ownerRecord->id),
-                Forms\Components\Select::make('user_id')
-                    ->label('Usuário:')
-                    ->options(fn ($operation) => $operation === 'create' ? $users : User::where('is_active', true)->pluck('name', 'id'))
-                    ->disabled(fn ($operation) => $operation === 'edit')
+                Forms\Components\Select::make('team_id')
+                    ->label('Time:')
+                    ->options(Team::all()->pluck('name', 'id'))
                     ->columnSpan(2)
                     ->searchable()
                     ->required(),
@@ -47,8 +39,7 @@ class UsersRelationManager extends RelationManager
                 Forms\Components\Toggle::make('is_accepted')
                     ->label('Aceitou'),
                 Forms\Components\Toggle::make('is_leader')
-                    ->label('Lider')
-                    ->hidden(fn ($operation) => $this->ownerRecord->users()->wherePivot('is_leader', true)->count() > 0 && $operation === 'create'),
+                    ->label('Lider'),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Ativo')
                     ->default(true),
@@ -60,12 +51,12 @@ class UsersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('teamFlag')
+                    ->collection('teamFlags')
+                    ->label('Bandeira:')
+                    ->conversion('small'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome:')
-                    ->sortable()
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->label('E-mail:')
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\IconColumn::make('pivot.is_allowed')
@@ -80,29 +71,56 @@ class UsersRelationManager extends RelationManager
                 Tables\Columns\IconColumn::make('pivot.is_active')
                     ->label('Ativo:')
                     ->boolean(),
+                Tables\Columns\TextColumn::make('tournament.title')
+                    ->label('Torneio:')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\ColorColumn::make('color')
+                    ->label('Cor:')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('is_open')
+                    ->label('Time Aberto:')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Time Ativo:')
+                    ->boolean()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()
-                    ->label('Vincular usuário a um time')
-                    ->using(function ($data) {
-                        $team = $this->ownerRecord;
-                        $is_leader = $team->users()->wherePivot('is_leader', true)->count() === 0 
-                            ? $data['is_leader'] 
-                            : false;
+                    ->label('Vincular a um time')
+                    ->using(function ($data, $action) {
+                        $user = $this->ownerRecord;
 
-                        $team->users()->attach($data['user_id'], [
+                        if ($data['is_leader']) {
+                            $count_leader = Team::find($data['team_id'])->users()->wherePivot('is_leader', true)->count();
+
+                            // dd($count_leader);
+
+                            if ($count_leader > 0 || !$data['is_allowed'] || !$data['is_accepted']) {
+                                Notification::make()
+                                    ->title('Lider Recusado')
+                                    ->body('Este usuário só pode ser aceito como lider se estiver permitido e aceito sua participação no time e se não houver outro lider')
+                                    ->danger()
+                                    ->send();
+
+                                $action->halt();
+                            }
+                        }
+
+                        $user->teams()->attach($data['team_id'], [
                             'is_allowed' => $data['is_allowed'],
                             'is_accepted' => $data['is_accepted'],
-                            'is_leader' => $is_leader,
+                            'is_leader' => $data['is_leader'],
                             'is_active' => $data['is_active'],
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
 
-                        return $team;
+                        return $user;
                     }),
             ])
             ->actions([
@@ -131,21 +149,19 @@ class UsersRelationManager extends RelationManager
                 Tables\Actions\DeleteAction::make()
                     ->iconButton()
                     ->using(function ($record) {
-                        $team = $this->ownerRecord;
+                        $record->users()->detach($this->ownerRecord->id);
 
-                        $team->users()->detach($record->id);
-
-                        if ($team->users()->wherePivot('is_leader', true)->count() === 0) {
-                            $user = $team->users()->orderBy('team_user.created_at', 'desc')->first();
+                        if ($record->users()->wherePivot('is_leader', true)->count() === 0) {
+                            $user = $record->users()->orderBy('team_user.created_at', 'desc')->first();
 
                             if ($user) {
-                                $team->users()->updateExistingPivot($user->id, [
+                                $record->users()->updateExistingPivot($user->id, [
                                     'is_leader' => true,
                                 ]);
                             }
                         }
                         
-                        return $this->ownerRecord;
+                        return $record;
                     }),
             ])
             ->bulkActions([

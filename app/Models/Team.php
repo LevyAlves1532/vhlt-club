@@ -36,7 +36,8 @@ class Team extends Model implements HasMedia
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'team_user', 'team_id', 'user_id');
+        return $this->belongsToMany(User::class, 'team_user', 'team_id', 'user_id')
+            ->withPivot('id', 'is_allowed', 'is_accepted', 'is_leader', 'is_active');
     }
 
     public function tournament(): BelongsTo
