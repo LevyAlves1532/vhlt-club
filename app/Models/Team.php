@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -31,6 +32,12 @@ class Team extends Model implements HasMedia
 
         $this->addMediaConversion('big')
             ->fit(Fit::Contain, 1200, 1200);
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'team_user', 'team_id', 'user_id')
+            ->withPivot('id', 'is_allowed', 'is_accepted', 'is_leader', 'is_active');
     }
 
     public function tournament(): BelongsTo

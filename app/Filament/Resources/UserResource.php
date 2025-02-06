@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enum\PermissionsEnum;
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\RelationManagers\TeamsRelationManager;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -136,7 +137,7 @@ class UserResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            TeamsRelationManager::class,
         ];
     }
 
