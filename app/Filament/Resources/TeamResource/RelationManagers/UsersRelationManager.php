@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TeamResource\RelationManagers;
 
+use App\Filament\Resources\TeamResource\Pages\ListTeams;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Forms;
@@ -136,12 +137,35 @@ class UsersRelationManager extends RelationManager
                         $team->users()->detach($record->id);
 
                         if ($team->users()->wherePivot('is_leader', true)->count() === 0) {
-                            $user = $team->users()->orderBy('team_user.created_at', 'desc')->first();
+                            $user_id = null;
 
-                            if ($user) {
-                                $team->users()->updateExistingPivot($user->id, [
+                            $user_all_permission = $team->users()->wherePivot('is_allowed', true)
+                                ->wherePivot('is_accepted', true)
+                                ->orderBy('team_user.created_at', 'desc')
+                                ->first();
+
+                            if ($user_all_permission) {
+                                $user_id = $user_all_permission->id;
+                            }
+
+                            $user_accept = $team->users()->wherePivot('is_accepted', true)
+                                ->orderBy('team_user.created_at', 'desc')
+                                ->first();
+
+                            if ($user_accept && !$user_id) {
+                                $user_id = $user_accept->id;
+                            }
+
+                            if ($user_id) {
+                                $team->users()->updateExistingPivot($user_id, [
                                     'is_leader' => true,
+                                    'is_allowed' => true,
                                 ]);
+                            } else {
+                                $team->users()->detach();
+                                $team->delete();
+
+                                return redirect(ListTeams::getUrl());
                             }
                         }
                         

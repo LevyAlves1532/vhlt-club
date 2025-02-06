@@ -5,6 +5,7 @@ namespace App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\Team;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -33,13 +34,23 @@ class TeamsRelationManager extends RelationManager
                     ->options(Team::all()->pluck('name', 'id'))
                     ->columnSpan(2)
                     ->searchable()
+                    ->live(onBlur: true)
                     ->required(),
                 Forms\Components\Toggle::make('is_allowed')
                     ->label('Permitido'),
                 Forms\Components\Toggle::make('is_accepted')
                     ->label('Aceitou'),
                 Forms\Components\Toggle::make('is_leader')
-                    ->label('Lider'),
+                    ->label('Lider')
+                    ->hidden(function (Get $get) {
+                        $is = false;
+
+                        if ($get('team_id')) {
+                            $is = Team::find($get('team_id'))->users()->wherePivot('is_leader', true)->count() > 0;
+                        }
+                        return $is;
+                    })
+                    ->reactive(),
                 Forms\Components\Toggle::make('is_active')
                     ->label('Ativo')
                     ->default(true),
@@ -95,7 +106,7 @@ class TeamsRelationManager extends RelationManager
                     ->using(function ($data, $action) {
                         $user = $this->ownerRecord;
 
-                        if ($data['is_leader']) {
+                        if (!empty($data['is_leader'])) {
                             $count_leader = Team::find($data['team_id'])->users()->wherePivot('is_leader', true)->count();
 
                             // dd($count_leader);
@@ -109,12 +120,12 @@ class TeamsRelationManager extends RelationManager
 
                                 $action->halt();
                             }
-                        }
+                        } 
 
                         $user->teams()->attach($data['team_id'], [
                             'is_allowed' => $data['is_allowed'],
                             'is_accepted' => $data['is_accepted'],
-                            'is_leader' => $data['is_leader'],
+                            'is_leader' => !empty($data['is_leader']) ? true : false,
                             'is_active' => $data['is_active'],
                             'created_at' => now(),
                             'updated_at' => now(),
@@ -152,12 +163,34 @@ class TeamsRelationManager extends RelationManager
                         $record->users()->detach($this->ownerRecord->id);
 
                         if ($record->users()->wherePivot('is_leader', true)->count() === 0) {
-                            $user = $record->users()->orderBy('team_user.created_at', 'desc')->first();
+                            $user_id = null;
 
-                            if ($user) {
-                                $record->users()->updateExistingPivot($user->id, [
+                            $user_all_permission = $record->users()
+                                ->wherePivot('is_allowed', true)
+                                ->wherePivot('is_accepted', true)
+                                ->orderBy('team_user.created_at', 'desc')
+                                ->first();
+
+                            if ($user_all_permission) {
+                                $user_id = $user_all_permission->id;
+                            }
+
+                            $user_accept = $record->users()->wherePivot('is_accepted', true)
+                                ->orderBy('team_user.created_at', 'desc')
+                                ->first();
+
+                            if ($user_accept && !$user_id) {
+                                $user_id = $user_accept->id;
+                            }
+
+                            if ($user_id) {
+                                $record->users()->updateExistingPivot($user_id, [
                                     'is_leader' => true,
+                                    'is_allowed' => true,
                                 ]);
+                            } else {
+                                $record->users()->detach();
+                                $record->delete();
                             }
                         }
                         
