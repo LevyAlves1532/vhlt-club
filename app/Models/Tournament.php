@@ -47,6 +47,11 @@ class Tournament extends Model implements HasMedia
         return $this->hasMany(Team::class);
     }
 
+    public function docs(): HasMany
+    {
+        return $this->hasMany(TournamentDoc::class);
+    }
+
     public function community(): BelongsTo
     {
         return $this->belongsTo(Community::class);
